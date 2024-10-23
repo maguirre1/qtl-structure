@@ -1,1 +1,1 @@
-# qtl-structure
+# Project on eQTLs in structured GRNs
