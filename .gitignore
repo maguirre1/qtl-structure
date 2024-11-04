@@ -1,0 +1,6 @@
+data/*
+figures/.ipynb_checkpoints
+figures/figdata/*
+src/.ipynb_checkpoints
+src/__pycache__
+src/__pycache__/*
