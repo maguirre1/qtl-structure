@@ -153,10 +153,10 @@ class grn(nx.DiGraph):
         #  L = (V_cis x I)(I - A)^{-1}
         # computes cis contribution to heritability as 
         #  V_cis / V_tot = (L x I)^2 / ((L^T L) x I)
-        if V_cis is None and ('V_cis' not in dir(self) or self.V_cis is None):
-            self.V_cis = np.ones(self.n)
-        else:
+        if V_cis is not None:
             self.V_cis = V_cis
+        elif 'V_cis' not in dir(self):
+            self.V_cis = np.ones(self.n)
         
         self.L = np.diag(np.sqrt(self.V_cis)) @ np.linalg.pinv(np.eye(self.n) - self.A)
         
@@ -165,6 +165,46 @@ class grn(nx.DiGraph):
         return self
     
     
+    def decompose_variance(self, V_cis=None):
+        if V_cis is not None:
+            self.V_cis = V_cis
+        elif 'V_cis' not in dir(self):
+            self.V_cis = np.ones(self.n)
+            
+        if 'L' not in dir(self):
+            self.compute_h2()
+        
+        # set copies of matrixes: adjacency and variance covariance
+        A = self.A.copy()
+        V = A.copy()
+
+        # store distances in this matrix
+        D = np.full(A.shape, np.nan)
+        D[np.eye(self.n) == 1] = 0
+        D[(A != 0) & np.isnan(D)] = 1
+        
+        # iterate through the graph
+        while np.any(A):
+            A = A.dot(self.A)
+            D[(A != 0) & np.isnan(D)] = np.nanmax(D) + 1
+            V += A
+        
+        # variance sums up along paths of all lengths
+        V *= V
+        # add back the cis contributions
+        V += np.diag(self.V_cis)
+        # cumulative decomposition by distance (gene x max-distance)
+        X = np.cumsum([
+                np.where(D==i, V, 0).sum(axis=0) for i in range(np.nanmax(D.astype(int)) + 1)
+        ], axis=0).T / np.diag(self.L.T @ self.L).reshape(-1,1)
+            
+        # store stuff
+        self.D = D
+        self.V = V
+        self.V_dist = X
+        return self
+        
+
     def simulate_population(self):
         ## TODO
         return self
