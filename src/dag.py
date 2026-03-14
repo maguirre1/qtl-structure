@@ -55,7 +55,7 @@ class grn(nx.DiGraph):
         return self
     
     
-    def add_ppm_structure(self, n_genes, n_groups, m=None, r=None, p=None, q=None, hierarchy=True, seed=None):
+    def add_ppm_structure(self, n_genes, n_groups, m=None, r=None, p=None, q=None, hierarchy=False, seed=None):
         # check for one combination of the following parameters:
         # - p, q: probability of within- and between-group edges
         # - r, m: expected regulators per gene, expected fraction of edges within-group
@@ -99,7 +99,7 @@ class grn(nx.DiGraph):
         return self
     
     
-    def add_dsfg_structure(self, n_genes, n_groups, r=5, d=10, w=1, hierarchy=True):
+    def add_dsfg_structure(self, n_genes, n_groups, r=5, d=10, w=1, hierarchy=False):
         ## TODO
         self.n = n_genes
         
